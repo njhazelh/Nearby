@@ -7,9 +7,11 @@ import android.bluetooth.*;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.fake_nearby.nearby.nearby.dummy.DummyContent;
+
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BTDeviceFragment.OnListFragmentInteractionListener {
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     ArrayAdapter<String> mArrayAdapter;
 
@@ -45,5 +47,10 @@ public class MainActivity extends AppCompatActivity {
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
         }
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
     }
 }

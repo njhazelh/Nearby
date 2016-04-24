@@ -2,19 +2,24 @@ package com.fake_nearby.nearby.nearby;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.fake_nearby.nearby.nearby.dummy.DummyContent;
 import com.fake_nearby.nearby.nearby.dummy.DummyContent.DummyItem;
@@ -38,6 +43,20 @@ public class BTDeviceFragment extends Fragment {
     private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private ArrayAdapter<String> mArrayAdapter;
     private int REQUEST_ENABLE_BT = 1;
+    // Create a BroadcastReceiver for ACTION_FOUND
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            // When discovery finds a device
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                // Get the BluetoothDevice object from the Intent
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                // Add the name and address to an array adapter to show in a ListView
+                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                mArrayAdapter.notifyDataSetChanged();
+            }
+        }
+    };
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -69,15 +88,24 @@ public class BTDeviceFragment extends Fragment {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
+    }
+
+    public void doBTScan() {
+        // Register the BroadcastReceiver
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
+
+        // get your devices
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             // Loop through paired devices
             for (BluetoothDevice device : pairedDevices) {
                 // Add the name and address to an array adapter to show in a ListView
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + " (yours)");
             }
         }
-
+        // get other available devices
+        mBluetoothAdapter.startDiscovery();
     }
 
     @Override
@@ -86,6 +114,13 @@ public class BTDeviceFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_btdevice_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.fragment_btdevice_list);
         listView.setAdapter(mArrayAdapter);
+        final Button button = (Button) getActivity().findViewById(R.id.scan_btn);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "Scanning...", Toast.LENGTH_SHORT).show();
+                doBTScan();
+            }
+        });
 
         // TODO
         /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -123,13 +158,15 @@ public class BTDeviceFragment extends Fragment {
                     + " must implement OnListFragmentInteractionListener");
         }
     }
-
+    */
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        getActivity().unregisterReceiver(mReceiver);
+        mBluetoothAdapter.cancelDiscovery();
     }
-    */
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
