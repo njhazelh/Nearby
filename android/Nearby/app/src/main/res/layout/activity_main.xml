@@ -20,7 +20,15 @@
         android:layout_height="wrap_content"
         android:text="@string/scan_bt"
         android:id="@+id/scan_btn"
-        android:layout_marginTop="50dp"
         android:layout_below="@+id/welcome_text"
         android:layout_centerHorizontal="true" />
+
+    <FrameLayout
+        android:id="@+id/btdevice_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/scan_btn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>
