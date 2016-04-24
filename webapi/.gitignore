@@ -63,6 +63,7 @@ target/
 
 # Vitualenv
 .Python
-bin
-lib
-include
+[Bb]in
+[Ll]ib
+[Ii]nclude
+pip-selfcheck.json
