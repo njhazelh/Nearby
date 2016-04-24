@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Nearby</string>
+    <string name="welcome_msg">Welcome to Nearby!</string>
+    <string name="scan_bt">Scan for nearby devices</string>
+</resources>
