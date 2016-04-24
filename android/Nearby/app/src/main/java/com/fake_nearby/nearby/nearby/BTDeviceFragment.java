@@ -24,6 +24,7 @@ import android.widget.Toast;
 import com.fake_nearby.nearby.nearby.dummy.DummyContent;
 import com.fake_nearby.nearby.nearby.dummy.DummyContent.DummyItem;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -87,7 +88,6 @@ public class BTDeviceFragment extends Fragment {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-
     }
 
     public void doBTScan() {
@@ -111,6 +111,11 @@ public class BTDeviceFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ArrayList<String> defItems = new ArrayList<String>();
+        defItems.add("one");
+        defItems.add("two");
+        defItems.add("three");
+        mArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.fragment_btdevice, R.id.content1, defItems);
         View view = inflater.inflate(R.layout.fragment_btdevice_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.fragment_btdevice_list);
         listView.setAdapter(mArrayAdapter);
