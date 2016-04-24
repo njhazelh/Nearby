@@ -1,7 +1,9 @@
 #! /bin/bash
 
-BASEDIR = $(dirname "$0")
+echo "${BASH_SOURCE[0]}"
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+echo $SCRIPT_DIR
 
-cp $BASEDIR/../conf/django.conf /etc/nginx/sites-enabled
-cp $BASEDIR/../conf/gunicorn.conf /etc/init/
+cp "$SCRIPT_DIR/../conf/django.conf" /etc/nginx/sites-enabled
+cp "$SCRIPT_DIR/../conf/gunicorn.conf"  /etc/init/
 service gunicorn restart
