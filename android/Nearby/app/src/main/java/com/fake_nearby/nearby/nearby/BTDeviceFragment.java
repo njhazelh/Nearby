@@ -55,8 +55,7 @@ public class BTDeviceFragment extends Fragment {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                 // Add the name and address to an array adapter to show in a ListView
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" + Integer.toString(rssi) + " dBm");
-                mArrayAdapter.notifyDataSetChanged();
+                displayDevice(device.getName(), device.getAddress(), rssi, false);
                 System.out.println("found something");
             }
         }
@@ -90,33 +89,59 @@ public class BTDeviceFragment extends Fragment {
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+
+            // Register the BroadcastReceiver
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
         }
     }
 
     public void doBTScan() {
+        System.out.println(mArrayAdapter.getCount());
         // get your devices
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             // Loop through paired devices
             for (BluetoothDevice device : pairedDevices) {
-                String devTag = device.getName() + " (yours)\n" + device.getAddress();
-                // Add the name and address to an array adapter to show in a ListView
-                if (mArrayAdapter.getPosition(devTag) == -1) {
-                    mArrayAdapter.add(devTag);
-                }
+                this.displayDevice(device.getName(), device.getAddress(), 0, true);
             }
         }
         // get other available devices
-        Boolean started = mBluetoothAdapter.startDiscovery();
-        System.out.println(started);
+        mBluetoothAdapter.startDiscovery();
+    }
+
+    // @param rssi: the signal strength (paired devices will always send in 999, a value which will be ignored)
+    public void displayDevice(String name, String address, int rssi, boolean paired) {
+        // TODO: API CALL HERE
+        // make the call and identify the user as either a registered/id'd person
+        // or someone who should be identified
+        String devTag = name + "\n" + address;
+        String apiName = "";
+        if (apiName != "") {
+            devTag = apiName;
+        }
+        else if (paired) {
+            devTag = "You: " + devTag;
+        }
+        else {
+            devTag = "Unknown user: " + devTag;
+        }
+
+        // add rssi for non-paired devices
+        if (!paired) {
+            devTag += "\n" + Integer.toString(rssi) + " dBm";
+        }
+
+        // Add the name and address to an array adapter to show in a ListView
+        if (mArrayAdapter.getPosition(devTag) == -1) {
+            mArrayAdapter.add(devTag);
+            mArrayAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Register the BroadcastReceiver
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
         ArrayList<String> defItems = new ArrayList<String>();
         defItems.add("one");
         defItems.add("two");
