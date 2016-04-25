@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:title="Username"
+        android:key="saved_username"
+        android:defaultValue="jcool"
+        android:inputType="text"
+        android:singleLine="true"
+        />
+    <EditTextPreference
+        android:title="Name (First Last)"
+        android:key="saved_firstlast"
+        android:defaultValue="Joe Cool"
+        android:inputType="text"
+        android:singleLine="true"
+        />
+</PreferenceScreen>
