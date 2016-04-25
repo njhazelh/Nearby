@@ -49,12 +49,15 @@ public class BTDeviceFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             // When discovery finds a device
+            System.out.println("action " + action.toString());
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                 // Add the name and address to an array adapter to show in a ListView
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" + Integer.toString(rssi) + " dBm");
                 mArrayAdapter.notifyDataSetChanged();
+                System.out.println("found something");
             }
         }
     };
@@ -91,26 +94,29 @@ public class BTDeviceFragment extends Fragment {
     }
 
     public void doBTScan() {
-        // Register the BroadcastReceiver
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
-
         // get your devices
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             // Loop through paired devices
             for (BluetoothDevice device : pairedDevices) {
+                String devTag = device.getName() + " (yours)\n" + device.getAddress();
                 // Add the name and address to an array adapter to show in a ListView
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + " (yours)");
+                if (mArrayAdapter.getPosition(devTag) == -1) {
+                    mArrayAdapter.add(devTag);
+                }
             }
         }
         // get other available devices
-        mBluetoothAdapter.startDiscovery();
+        Boolean started = mBluetoothAdapter.startDiscovery();
+        System.out.println(started);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Register the BroadcastReceiver
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
         ArrayList<String> defItems = new ArrayList<String>();
         defItems.add("one");
         defItems.add("two");
