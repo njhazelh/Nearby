@@ -1,28 +1,38 @@
 from bottle import request, response
+from util.request_validation import validate_username, validate_password
 import json
 
 def login():
+    """
+    Are there potential exploits in user JSON over form format?
+    """
     try:
-        try:
-            login_info = request.json
-        except RuntimeError as e:
-            # log the error once I set up logging
-            raise ValueError
+        data = request.json
 
-        if login_info is None:
+        if data is None:
             raise ValueError
 
         # validate data
+        if 'username' not in data or not validate_username(data['username']):
+            raise ValueError
+        if 'password' not in data or not validate_password(data['password']):
+            raise ValueError
+
+        username = data['username']
+        password = data['password']
     except ValueError:
         print("ValueError")
         response.status = 400
         return
 
-    # check if username and password match
-
-    # if match generate new session and return JWT
-
-    return json.dumps(login_info)
+    # SELECT * FROM users WHERE user.username = username
+    # check if password matches database using scrypt
+    # Generate session token
+    # INSERT INTO sessions VALUE (token, user_id, expiration)
+    # Return token
+    return json.dumps({"token": "some_magical_unique_token_thing"})
 
 def logout():
+    # Needs user token
+    # DELETE FROM sessions WHERE session.id = token
     return "You are now logged out!"

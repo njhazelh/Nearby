@@ -18,6 +18,7 @@ def setup_routing(app):
     app.route('/api/users', 'DELETE', users.delete_user)
     app.route('/api/users/<user_id:int>', 'GET', users.get_user_info)
     app.route('/api/users/nearby', 'GET', users.get_nearby_users)
+    app.route('/api/devices', 'GET', devices.get_devices)
     app.route('/api/devices', 'POST', devices.add_new_device)
     app.route('/api/observations', 'POST', observations.record_observation)
 
