@@ -41,26 +41,9 @@ public class BTDeviceFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
-    private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private ArrayAdapter<String> mArrayAdapter;
     private int REQUEST_ENABLE_BT = 1;
 
-    // Create a BroadcastReceiver for ACTION_FOUND
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            // When discovery finds a device
-            System.out.println("action " + action.toString());
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-                // Add the name and address to an array adapter to show in a ListView
-                displayDevice(device.getName(), device.getAddress(), rssi, false);
-                System.out.println("found something");
-            }
-        }
-    };
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -87,20 +70,6 @@ public class BTDeviceFragment extends Fragment {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
 
-    }
-
-    public void doBTScan() {
-        System.out.println(mArrayAdapter.getCount());
-        // get your devices
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-        if (pairedDevices.size() > 0) {
-            // Loop through paired devices
-            for (BluetoothDevice device : pairedDevices) {
-                this.displayDevice(device.getName(), device.getAddress(), 0, true);
-            }
-        }
-        // get other available devices
-        mBluetoothAdapter.startDiscovery();
     }
 
     // @param rssi: the signal strength (paired devices will always send in 999, a value which will be ignored)
@@ -186,8 +155,6 @@ public class BTDeviceFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        getActivity().unregisterReceiver(mReceiver);
-        mBluetoothAdapter.cancelDiscovery();
     }
 
     /**

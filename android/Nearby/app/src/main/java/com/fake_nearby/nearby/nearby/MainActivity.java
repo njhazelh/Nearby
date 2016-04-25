@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             // When discovery finds a device
-            System.out.println("action " + action.toString());
+            System.out.println("action " + action);
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -59,12 +59,18 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
             if (!mBluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-
-                // Register the BroadcastReceiver
-                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
             }
+            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE), 1);
 
+            // Register the BroadcastReceiver
+            IntentFilter fltr = new IntentFilter();
+            fltr = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+            fltr.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            fltr.addAction(BluetoothDevice.ACTION_FOUND);
+            //IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(mReceiver, fltr); // Don't forget to unregister during onDestroy
+
+            // Set the button to start a scan
             final Button button = (Button) findViewById(R.id.scan_btn);
             assert button != null;
             button.setOnClickListener(new View.OnClickListener() {
@@ -97,6 +103,34 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         frag.displayDevice(name, address, rssi, paired);
     }
 
+    protected void onResume() {
+        super.onResume();
+
+        // Register the BroadcastReceiver
+        IntentFilter fltr = new IntentFilter();
+        fltr = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        fltr.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        fltr.addAction(BluetoothDevice.ACTION_FOUND);
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mReceiver, fltr); // Don't forget to unregister during onDestroy
+        System.out.println("onresume");
+    }
+
+    protected void onPause() {
+        super.onPause();
+        if (mReceiver != null) {
+            unregisterReceiver(mReceiver);
+        }
+        System.out.println("onpause");
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mReceiver != null) {
+            unregisterReceiver(mReceiver);
+        }
+        System.out.println("ondestroy");
+    }
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
 
