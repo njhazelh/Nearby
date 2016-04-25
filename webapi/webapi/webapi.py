@@ -1,50 +1,33 @@
 #! /usr/bin/env python
 
-from bottle import run, post, get, put, delete
+from bottle import request, app, run, hook
+from resources import access, devices, observations, users
 
-@get('/api')
-def index():
-    return "Hello, world!"
 
-@get('/api/access')
-def login():
-    return "login token value thing"
+@hook('before_request')
+def strip_path():
+    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
-@delete('/api/access')
-def logout():
-    return "You are now logged out!"
 
-@get('/api/users')
-def get_personal_info():
-    return "Here is your personal info"
+def setup_routing(app):
+    app.route('/api/access', 'POST', access.login)
+    app.route('/api/access', 'DELETE', access.logout)
+    app.route('/api/users', 'GET', users.get_personal_info)
+    app.route('/api/users', 'POST', users.create_new_user)
+    app.route('/api/users', 'PUT', users.change_personal_info)
+    app.route('/api/users', 'DELETE', users.delete_user)
+    app.route('/api/users/<user_id:int>', 'GET', users.get_user_info)
+    app.route('/api/users/nearby', 'GET', users.get_nearby_users)
+    app.route('/api/devices', 'POST', devices.add_new_device)
+    app.route('/api/observations', 'POST', observations.record_observation)
 
-@post('/api/users')
-def create_new_user():
-    return "I have created a new user for you"
 
-@put('/api/users')
-def change_personal_info():
-    return "I have changed your personal info"
-
-@delete('/api/users')
-def delete_user():
-    return "I have deleted your user.  Why does everyone leave me?"
-
-@get('/api/users/<user_id:int>')
-def get_user_info(user_id):
-    return "This is everything I know about, %s: jack-shit" % user_id
-
-@get('/api/users/nearby')
-def get_nearby_users():
-    return "People might be nearby.  Who knows? Not I."
-
-@post('/api/observations')
-def record_observation():
-    return "I'll remember that for the future."
-
-@post('/api/devices')
-def add_new_device():
-    return "Device associated with your account. Forgot the others"
+def setup_middleware(app):
+    return app
 
 if __name__ == "__main__":
-    run(server="gunicorn", host='localhost', port=9000)
+    app = app()
+    setup_routing(app)
+    app = setup_middleware(app)
+    # add server='gunicorn' for deployment and remove reloader
+    run(host='localhost', port=9000, app=app, reloader=True)
