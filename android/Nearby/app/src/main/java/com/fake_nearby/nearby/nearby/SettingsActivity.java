@@ -4,12 +4,14 @@ package com.fake_nearby.nearby.nearby;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -20,6 +22,11 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -45,9 +52,91 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // For all other preferences, set the summary to the value's
             // simple string representation.
             preference.setSummary(stringValue);
+            try {
+                URL url = new URL("nearby.nick-jones.me/api/users?".concat(stringValue));
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                if (preference.getKey().equals("username")) {
+                    urlConnection.setRequestMethod("POST");
+                }
+                else if (preference.getKey().equals("firstlast")) {
+                    urlConnection.setRequestMethod("PUT");
+                }
+                urlConnection.connect();
+
+                // DEBUG
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    System.out.println("bad");
+                }
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                    System.out.println("bad");
+                }
+                System.out.println(buffer.toString());
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+                System.out.println("Something went wrong in API");
+            }
             return true;
         }
     };
+
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                          String key) {
+        System.out.println("shared pref changed!");
+        try {
+            URL url = new URL("nearby.nick-jones.me/api/users?".concat(sharedPreferences.getString(key, "")));
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            if (key.equals("username")) {
+                urlConnection.setRequestMethod("POST");
+            }
+            else if (key.equals("firstlast")) {
+                urlConnection.setRequestMethod("PUT");
+            }
+            urlConnection.connect();
+
+            // DEBUG
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+                System.out.println("bad");
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                // Stream was empty.  No point in parsing.
+                System.out.println("bad");
+            }
+            System.out.println(buffer.toString());
+        }
+        catch (Exception e) {
+            System.out.println("Something went wrong in API");
+        }
+    }
 
     /**
      * Helper method to determine if the device has an extra-large screen. For
@@ -146,7 +235,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                startActivity(new Intent(getActivity(), MainActivity.class));
                 return true;
             }
             return super.onOptionsItemSelected(item);
