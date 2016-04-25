@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from bottle import request, app, run, hook
+from bottle import request, response, app, run, hook
 from resources import access, devices, observations, users
 
 
@@ -8,12 +8,19 @@ from resources import access, devices, observations, users
 def strip_path():
     request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
+@hook('after_request')
+def set_json():
+    """
+    All responses from this API will be JSON
+    """
+    response.headers['Content-Type'] = 'application/json'
+
 
 def setup_routing(app):
     app.route('/api/access', 'POST', access.login)
     app.route('/api/access', 'DELETE', access.logout)
     app.route('/api/users', 'GET', users.get_personal_info)
-    app.route('/api/users', 'POST', users.create_new_user)
+    app.route('/api/users', 'POST', users.create_new_user1)
     app.route('/api/users', 'PUT', users.change_personal_info)
     app.route('/api/users', 'DELETE', users.delete_user)
     app.route('/api/users/<user_id:int>', 'GET', users.get_user_info)
