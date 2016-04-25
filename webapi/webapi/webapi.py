@@ -20,7 +20,7 @@ def setup_routing(app):
     app.route('/api/access', 'POST', access.login)
     app.route('/api/access', 'DELETE', access.logout)
     app.route('/api/users', 'GET', users.get_personal_info)
-    app.route('/api/users', 'POST', users.create_new_user1)
+    app.route('/api/users', 'POST', users.create_new_user)
     app.route('/api/users', 'PUT', users.change_personal_info)
     app.route('/api/users', 'DELETE', users.delete_user)
     app.route('/api/users/<user_id:int>', 'GET', users.get_user_info)
