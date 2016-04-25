@@ -44,6 +44,7 @@ public class BTDeviceFragment extends Fragment {
     private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private ArrayAdapter<String> mArrayAdapter;
     private int REQUEST_ENABLE_BT = 1;
+
     // Create a BroadcastReceiver for ACTION_FOUND
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -85,15 +86,7 @@ public class BTDeviceFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
-        // enable bluetooth
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
-            // Register the BroadcastReceiver
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
-        }
     }
 
     public void doBTScan() {
@@ -150,13 +143,7 @@ public class BTDeviceFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_btdevice_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.fragment_btdevice_list);
         listView.setAdapter(mArrayAdapter);
-        final Button button = (Button) getActivity().findViewById(R.id.scan_btn);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Toast.makeText(getContext(), "Scanning...", Toast.LENGTH_SHORT).show();
-                doBTScan();
-            }
-        });
+
 
         // TODO
         /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
