@@ -1,6 +1,14 @@
 from bottle import request, response
 from util.request_validation import validate_username, validate_password
 import json
+from collections import namedtuple
+from util.webshared import JSONResponse, Message
+
+class Token(JSONResponse):
+    def __init__(self, token):
+        self.token = token
+
+
 
 def login():
     """
@@ -30,9 +38,9 @@ def login():
     # Generate session token
     # INSERT INTO sessions VALUE (token, user_id, expiration)
     # Return token
-    return json.dumps({"token": "some_magical_unique_token_thing"})
+    return Token("some_magical_unique_token_ddthing").json
 
 def logout():
     # Needs user token
     # DELETE FROM sessions WHERE session.id = token
-    return "You are now logged out!"
+    return Message("You are now logged out!").json

@@ -8,13 +8,6 @@ from resources import access, devices, observations, users
 def strip_path():
     request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
-@hook('after_request')
-def set_json():
-    """
-    All responses from this API will be JSON
-    """
-    response.headers['Content-Type'] = 'application/json'
-
 
 def setup_routing(app):
     app.route('/api/access', 'POST', access.login)
