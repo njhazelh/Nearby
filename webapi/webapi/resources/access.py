@@ -2,13 +2,15 @@ from bottle import request, response
 from util.request_validation import validate_username, validate_password
 import json
 from collections import namedtuple
-from util.webshared import JSONResponse, Message, secure
+from util.webshared import JSONResponse, Message, secure, TOKEN_VALUE
+
 
 class Token(JSONResponse):
+
     def __init__(self, token):
         self.token = token
 
-@secure()
+
 def login():
     """
     Are there potential exploits in user JSON over form format?
@@ -37,7 +39,8 @@ def login():
     # Generate session token
     # INSERT INTO sessions VALUE (token, user_id, expiration)
     # Return token
-    return Token("some_magical_unique_token_ddthing").json
+    return Token(TOKEN_VALUE).json
+
 
 @secure()
 def logout():
