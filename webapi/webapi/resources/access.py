@@ -39,6 +39,7 @@ def login():
     # Return token
     return Token("some_magical_unique_token_ddthing").json
 
+@secure()
 def logout():
     # Needs user token
     # DELETE FROM sessions WHERE session.id = token
