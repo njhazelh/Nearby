@@ -1,4 +1,4 @@
-from util.webshared import Message, JSONResponse
+from util.webshared import Message, JSONResponse, secure
 
 class Devices(JSONResponse):
     def __init__(self, devices):
@@ -19,7 +19,7 @@ class Device(JSONResponse):
         return self.device
 
 
-
+@secure()
 def add_new_device():
     # Needs user token
     # Needs {'mac': 'mac_value'} in body
@@ -28,6 +28,7 @@ def add_new_device():
     # - INSERT INTO devices VALUE (token.userid, mac_value)
     return Message("Device associated with your account. Forgot the others").json
 
+@secure()
 def get_devices():
     # Needs user token
     # SELECT * FROM devices WHERE userid = token.userid
