@@ -21,3 +21,6 @@ def validate_name(name):
 
 def validate_mac(mac):
     return True
+
+def validate_timestamp(timestamp):
+    return True

@@ -58,7 +58,7 @@ class Observation(Base):
     """
     __tablename__ = "observations"
     id = Column(Integer, primary_key=True)
-    time = Column(DateTime, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="observations")

@@ -11,6 +11,7 @@ from util.validation import validate_name, validate_username, validate_password
 
 from data.db_models import User
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import text
 
 from data.db_models import User
 
@@ -152,4 +153,30 @@ def get_nearby_users(db):
     # Needs user token
     # url params to specify timeframe?
     # SELECT * FROM users WHERE ??????? << TABLE JOINS?
-    return Users([UserJSON(1, "Bob"), UserJSON(2, "Anne")]).json
+    user = request.environ.get('user_info')
+    if user is None:
+        raise RuntimeError("get_nearby_users should always have user_info")
+
+    query = text(
+    """
+        WITH data AS (
+            SELECT * FROM observations o
+            WHERE age(CURRENT_TIMESTAMP, o.timestamp) < INTERVAL '1 day'
+        )
+
+        SELECT u.* FROM data d
+        JOIN devices dev on dev.id = d.device_id
+        JOIN users u ON u.id = dev.user_id
+        WHERE d.user_id = :target_user
+
+        UNION
+
+        SELECT u.* FROM data d
+        JOIN users u ON u.id = d.user_id
+        JOIN devices dev ON dev.id = d.device_id
+        WHERE dev.user_id = :target_user;
+    """)
+    query = query.bindparams(target_user=user.id)
+    seen = db.execute(query).fetchall()
+    seen = [UserJSON.from_db(u) for u in seen]
+    return Users(seen).json
