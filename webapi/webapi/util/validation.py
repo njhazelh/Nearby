@@ -16,11 +16,14 @@ def validate_password(password):
     """
     return True
 
+
 def validate_name(name):
     return True
 
+
 def validate_mac(mac):
     return True
+
 
 def validate_timestamp(timestamp):
     return True
