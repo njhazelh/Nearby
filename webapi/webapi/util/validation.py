@@ -15,3 +15,9 @@ def validate_password(password):
     What does a password look like?
     """
     return True
+
+def validate_name(name):
+    return True
+
+def validate_mac(mac):
+    return True
