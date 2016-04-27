@@ -140,12 +140,12 @@ def delete_user(db):
 
 
 def get_user_info(user_id, db):
-    try:
-        user = db.query(User).get(user_id)
-        return UserJSON.from_db(user).json
-    except NoResultFound:
+    user = db.query(User).get(user_id)
+    if user is None:
         response.status = 404
         return Error("User %d doesn't exist" % user_id).json
+
+    return UserJSON.from_db(user).json
 
 
 @secure()
