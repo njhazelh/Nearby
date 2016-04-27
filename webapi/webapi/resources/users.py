@@ -87,10 +87,46 @@ def create_new_user(db):
 
 @secure()
 def change_personal_info(db):
-    # Needs user token
-    # Needs body info
-    # UPDATE users SET user_info=new_info WHERE user_id = token.userid
-    return Message("I have changed your personal info").json
+    user = request.environ.get('user_info')
+    if user is None:
+        raise RuntimeError('change_personal_info should always have user_info')
+
+    data = request.json
+    if data is None:
+        return UserJSON.from_db(user).json
+
+    try:
+        if 'username' in data and not validate_username(data['username']):
+            raise ValueError
+        if 'password' in data and not validate_password(data['username']):
+            raise ValueError
+        if 'first_name' in data and not validate_name(data['first_name']):
+            raise ValueError
+        if 'last_name' in data and not validate_name(data['last_name']):
+            raise ValueError
+    except ValueError:
+        response.status = 400
+        return Error("Update contains invalid data").json
+
+
+    username = data.get('username', user.username)
+    password = data.get('password', user.password_hash)
+    first_name = data.get('first_name', user.first_name)
+    last_name = data.get('last_name', user.last_name)
+
+    if username != user.username:
+        count = db.query(User).filter(User.username == username).count()
+        if count != 0:
+            response.status = 400
+            return Error("'%s' already exists" % username).json
+
+    user.username = username
+    user.password_hash = password
+    user.first_name = first_name
+    user.last_name = last_name
+    db.commit()
+
+    return UserJSON.from_db(user).json
 
 
 @secure()
@@ -103,8 +139,6 @@ def delete_user(db):
 
 
 def get_user_info(user_id, db):
-    # Not authed?
-    # SELECT * FROM users WHERE user.id = user_id
     try:
         user = db.query(User).get(user_id)
         return UserJSON.from_db(user).json
