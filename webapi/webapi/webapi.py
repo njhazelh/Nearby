@@ -31,4 +31,4 @@ if __name__ == "__main__":
     setup_routing(app)
     app = setup_middleware(app)
     # add server='gunicorn' for deployment and remove reloader
-    run(host='localhost', port=9000, app=app, reloader=True)
+    run(host='localhost', port=9000, app=app, reloader=True, debug=True)

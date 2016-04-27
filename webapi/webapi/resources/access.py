@@ -1,8 +1,6 @@
 from bottle import request, response
 from util.request_validation import validate_username, validate_password
-import json
-from collections import namedtuple
-from util.webshared import JSONResponse, Message, secure, TOKEN_VALUE
+from util.webshared import JSONResponse, Message, Error, secure, TOKEN_VALUE
 
 
 class Token(JSONResponse):
@@ -32,7 +30,7 @@ def login():
     except ValueError:
         print("ValueError")
         response.status = 400
-        return
+        return Error("Missing valid username or password").json
 
     # SELECT * FROM users WHERE user.username = username
     # check if password matches database using scrypt
