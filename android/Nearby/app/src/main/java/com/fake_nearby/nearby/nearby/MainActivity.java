@@ -65,17 +65,17 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
-            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE), 1);
+
+            // make discoverable for as long as the app is open
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+            startActivityForResult(discoverableIntent, 1);
 
             this.getLocationPermission();
 
             // Register the BroadcastReceiver
-            IntentFilter fltr = new IntentFilter();
-            fltr = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-            fltr.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-            fltr.addAction(BluetoothDevice.ACTION_FOUND);
-            //IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mReceiver, fltr); // Don't forget to unregister during onDestroy
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
 
             // Set the button to start a scan
             final Button button = (Button) findViewById(R.id.scan_btn);
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         fltr.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         fltr.addAction(BluetoothDevice.ACTION_FOUND);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mReceiver, fltr); // Don't forget to unregister during onDestroy
+        registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
         System.out.println("onresume");
     }
 
