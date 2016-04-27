@@ -4,6 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.bluetooth.*;
@@ -64,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
             }
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE), 1);
 
+            this.getLocationPermission();
+
             // Register the BroadcastReceiver
             IntentFilter fltr = new IntentFilter();
             fltr = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -82,6 +87,14 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
                 }
             });
 
+        }
+    }
+
+    public void getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        1);
         }
     }
 
