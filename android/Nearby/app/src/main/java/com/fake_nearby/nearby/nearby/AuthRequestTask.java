@@ -22,7 +22,6 @@ import okhttp3.Response;
  */
 public class AuthRequestTask extends AsyncTask<String, Boolean, Boolean>  {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public static final String baseUrl = "http://nearby.nick-jones.me/api";
 
     protected void onPreExecute() {
         // perhaps show a dialog
@@ -39,7 +38,7 @@ public class AuthRequestTask extends AsyncTask<String, Boolean, Boolean>  {
         authJson.addProperty("password", aParams[1]);
 
         RequestBody authBody = RequestBody.create(JSON, authJson.toString());
-        Request request = new Request.Builder().url(baseUrl + "/access").post(authBody).build();
+        Request request = new Request.Builder().url(ApiRequests.baseUrl + "/access").post(authBody).build();
         try {
             Response response = client.newCall(request).execute();
             if (response.code() == 200) {

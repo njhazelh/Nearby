@@ -21,7 +21,7 @@ import okhttp3.Response;
 /**
  * Created by Lyn on 4/26/2016.
  */
-public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
+public class ReportObservationTask extends AsyncTask<String, Boolean, Boolean>  {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     protected void onPreExecute() {
@@ -35,21 +35,21 @@ public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
     protected Boolean doInBackground(String... aParams) {
         final OkHttpClient client = new OkHttpClient();
         final Gson gson = new Gson();
-        JsonObject addDevice = new JsonObject();
-        addDevice.addProperty("mac", aParams[0]);
+        JsonObject reportDevice = new JsonObject();
+        reportDevice.addProperty("timestamp", aParams[0]);
+        reportDevice.addProperty("mac", aParams[1]);
+        reportDevice.addProperty("rssi", aParams[2]);
         System.out.println(aParams[0]);
 
-        RequestBody authBody = RequestBody.create(JSON, addDevice.toString());
-        Request request = new Request.Builder().url(ApiRequests.baseUrl + "/devices").post(authBody).addHeader("Authentication", ApiRequests.authToken).build();
+        RequestBody authBody = RequestBody.create(JSON, reportDevice.toString());
+        Request request = new Request.Builder().url(ApiRequests.baseUrl + "/observations").post(authBody).addHeader("Authentication", ApiRequests.authToken).build();
         try {
             Response response = client.newCall(request).execute();
             if (response.code() == 200) {
-                /*
                 JsonParser parser = new JsonParser();
                 JsonElement element = parser.parse(response.body().string());
                 JsonObject jsonObject = element.getAsJsonObject();
                 System.out.println(jsonObject.get("message").getAsString());
-                */
                 return true;
             }
             else {

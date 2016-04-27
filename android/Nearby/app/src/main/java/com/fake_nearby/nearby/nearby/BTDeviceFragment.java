@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,9 +25,13 @@ import android.widget.Toast;
 import com.fake_nearby.nearby.nearby.dummy.DummyContent;
 import com.fake_nearby.nearby.nearby.dummy.DummyContent.DummyItem;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * A fragment representing a list of Items.
@@ -43,6 +48,7 @@ public class BTDeviceFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private ArrayAdapter<String> mArrayAdapter;
     private int REQUEST_ENABLE_BT = 1;
+    private ArrayList<String> devicesSeen = new ArrayList<String>();
 
 
     /**
@@ -72,35 +78,18 @@ public class BTDeviceFragment extends Fragment {
 
     }
 
-    // @param rssi: the signal strength (paired devices will always send in 999, a value which will be ignored)
-    public void displayDevice(String name, String address, int rssi, boolean paired) {
-        // TODO: API CALL HERE
-        // make the call and identify the user as either a registered/id'd person
-        // or someone who should be identified
-        if (name == null) {
-            name = "";
-        }
-        String devTag = name + "\n" + address;
-        String apiName = "";
-        if (!apiName.equals("")) {
-            devTag = apiName;
-        }
-        else if (paired) {
-            devTag = "You: " + devTag;
-        }
-        else {
+    public void displayDevice(BTDevice btd) {
+        String devTag = btd.toString();
+        if (btd.name.equals("")) {
             devTag = "Unknown user " + devTag;
         }
-
-        // add rssi for non-paired devices
-        if (!paired) {
-            devTag += "\n" + Integer.toString(rssi) + " dBm";
-        }
-
-        // Add the name and address to an array adapter to show in a ListView
-        if (mArrayAdapter.getPosition(devTag) == -1) {
+        if (!devicesSeen.contains(btd.mac)) {
+            devicesSeen.add(btd.mac);
             mArrayAdapter.add(devTag);
             mArrayAdapter.notifyDataSetChanged();
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+            String now = df.format(new Date());
+            ApiRequests.reportObservation(now, btd.mac, btd.rssi);
         }
     }
 
@@ -108,9 +97,6 @@ public class BTDeviceFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ArrayList<String> defItems = new ArrayList<String>();
-        defItems.add("one");
-        defItems.add("two");
-        defItems.add("three");
         mArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.fragment_btdevice, R.id.content1, defItems);
         View view = inflater.inflate(R.layout.fragment_btdevice_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.fragment_btdevice_list);
@@ -126,19 +112,6 @@ public class BTDeviceFragment extends Fragment {
                 startActivity(intent);
             }
         });*/
-        // OLD
-        // Set the adapter
-        /*if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new MyBTDeviceRecyclerViewAdapter(DummyContent.ITEMS, mListener));
-        }*/
-
         return view;
     }
 

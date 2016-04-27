@@ -26,10 +26,15 @@ public class ApiRequests {
 
     }
 
-    public static void addDevice(String mac) {
-        while (authToken.equals(""));
+    public static void reportObservation(String timestamp, String mac, int rssi) {
         if (!authToken.equals("")) {
-            new AddDeviceTask().execute(mac, authToken);
+            new ReportObservationTask().execute(timestamp, mac, Integer.toString(rssi));
+        }
+    }
+
+    public static void addDevice(String mac) {
+        if (!authToken.equals("")) {
+            new AddDeviceTask().execute(mac);
         }
     }
 

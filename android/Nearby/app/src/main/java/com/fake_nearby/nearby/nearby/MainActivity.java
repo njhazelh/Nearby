@@ -38,8 +38,9 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                BTDevice btd = new BTDevice(device.getName(), device.getAddress(), rssi, false);
                 // Add the name and address to an array adapter to show in a ListView
-                displayDevice(device.getName(), device.getAddress(), rssi, false);
+                displayDevice(btd);
                 System.out.println("found something");
             }
         }
@@ -140,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
     public void doBTScan() {
 //        System.out.println(mArrayAdapter.getCount());
         // get your devices
+        /*
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             // Loop through paired devices
@@ -147,14 +149,15 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
                 this.displayDevice(device.getName(), device.getAddress(), 0, true);
             }
         }
+        */
         // get other available devices
         mBluetoothAdapter.startDiscovery();
     }
 
     // @param rssi: the signal strength (paired devices will always send in 999, a value which will be ignored)
-    public void displayDevice(String name, String address, int rssi, boolean paired) {
+    public void displayDevice(BTDevice btd) {
         BTDeviceFragment frag = (BTDeviceFragment) getSupportFragmentManager().findFragmentById(R.id.btdevice_container);
-        frag.displayDevice(name, address, rssi, paired);
+        frag.displayDevice(btd);
     }
 
     protected void onResume() {
