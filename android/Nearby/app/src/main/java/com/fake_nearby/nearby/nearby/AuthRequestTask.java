@@ -32,6 +32,8 @@ public class AuthRequestTask extends AsyncTask<String, String, String>  {
         JsonObject authJson = new JsonObject();
         authJson.addProperty("username", aParams[0]);
         authJson.addProperty("password", aParams[1]);
+        System.out.println(aParams[0]);
+        System.out.println(aParams[0]);
 
         RequestBody authBody = RequestBody.create(JSON, authJson.toString());
         Request request = new Request.Builder().url(baseUrl + "/access").post(authBody).build();
