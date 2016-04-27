@@ -3,7 +3,7 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.fake_nearby.nearby.nearby.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="com.fake_nearby.nearby.nearby.SettingsActivity_old$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="Profile" />
 
