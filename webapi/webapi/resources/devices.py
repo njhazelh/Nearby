@@ -43,15 +43,19 @@ def add_new_device(db):
         response.status = 400
         return Error("Missing JSON with valid mac").json
 
-    count = db.query(Device).filter(Device.mac == mac_address).count()
-    if count != 0:
-        response.status = 400
-        return Error("Device with MAC '%s' already exists" % mac_address).json
-
     try:
         device = db.query(Device).filter(Device.user_id == user.id).one()
+        if mac_address != device.mac:
+            count = db.query(Device).filter(Device.mac == mac_address).count()
+            if count != 0:
+                response.status = 400
+                return Error("Device with MAC '%s' already exists" % mac_address).json
         device.mac = mac_address
     except NoResultFound:
+        count = db.query(Device).filter(Device.mac == mac_address).count()
+        if count != 0:
+            response.status = 400
+            return Error("Device with MAC '%s' already exists" % mac_address).json
         device = Device(user_id=user.id, mac=mac_address)
         db.add(device)
     db.commit()
