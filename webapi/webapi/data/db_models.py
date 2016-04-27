@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, ForeignKey
 from sqlalchemy import Boolean, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -16,6 +17,12 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
+    sessions = relationship("Session", back_populates="user",
+        cascade="all, delete, delete-orphan")
+    devices = relationship("Device", back_populates="user",
+        cascade="all, delete, delete-orphan")
+    observations = relationship("Observation", back_populates="user",
+        cascade="all, delete, delete-orphan")
 
 
 class Session(Base):
@@ -26,6 +33,7 @@ class Session(Base):
     __tablename__ = "sessions"
     id = Column(Integer, primary_key=True)
     session_hash = Column(String, index=True)
+    user = relationship("User", back_populates="sessions")
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     expires = Column(DateTime, nullable=False)
 
@@ -40,6 +48,7 @@ class Device(Base):
     mac = Column(String, index=True, nullable=False)
     active = Column(Boolean, nullable=False, default=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="devices")
 
 
 class Observation(Base):
@@ -52,3 +61,4 @@ class Observation(Base):
     time = Column(DateTime, nullable=False)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="observations")

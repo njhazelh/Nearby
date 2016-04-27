@@ -60,5 +60,7 @@ class secure:
 
             print("Authentication check passes")
 
+            request.environ['user_info'] = session.user
+
             return resource(**kwargs)
         return decorator

@@ -1,5 +1,5 @@
 from bottle import request, response
-from util.request_validation import validate_username, validate_password
+from util.validation import validate_username, validate_password
 from util.webshared import JSONResponse, Message, Error, secure, TOKEN_VALUE
 from data.db_models import Session, User
 
@@ -36,7 +36,6 @@ def login(db):
         username = data['username']
         password = data['password']
     except ValueError:
-        print("ValueError")
         response.status = 400
         return Error("Missing valid username or password").json
 
