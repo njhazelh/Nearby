@@ -27,6 +27,8 @@ public class ApiRequests {
     }
 
     public static void doAuthRequest(String username, String password) {
+        System.out.println(ApiRequests.authToken);
         new AuthRequestTask().execute(username, password);
+        System.out.println(ApiRequests.authToken);
     }
 }

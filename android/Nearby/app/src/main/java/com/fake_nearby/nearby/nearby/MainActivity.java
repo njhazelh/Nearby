@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
     }
 
     public void login() {
-        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));
     }
 
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
         }
+        this.login();
         System.out.println("ondestroy");
     }
     @Override
