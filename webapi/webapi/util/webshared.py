@@ -1,4 +1,6 @@
 from bottle import request, response
+from data.db_models import Session, User
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 
 TOKEN_VALUE = "some_magical_unique_token_thing"
@@ -37,19 +39,26 @@ class secure:
 
     def __call__(self, resource):
         def decorator(**kwargs):
+            db = kwargs['db']
             print("Authentication Check: level '%s'" % self.level)
             auth = request.headers.get("Authentication")
             if auth is None:
                 print("Missing authentication token")
                 response.status = 401
                 return Error("Missing authentication token").json
-            if auth != TOKEN_VALUE:
+
+            try:
+                session = db.query(Session) \
+                    .filter(Session.session_hash == auth) \
+                    .one()
+            except NoResultFound:
                 print("Authentication token invalid")
                 response.status = 401
                 return Error("Authentication token is invalid").json
-            print("Authentication check passes")
+            except MultipleResultsFound:
+                print('Multiple sessions found with same token')
 
-            # TODO: Lookup user information from TokenValue
+            print("Authentication check passes")
 
             return resource(**kwargs)
         return decorator

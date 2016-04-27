@@ -24,7 +24,7 @@ class Device(JSONResponse):
 
 
 @secure()
-def add_new_device():
+def add_new_device(db):
     # Needs user token
     # Needs {'mac': 'mac_value'} in body
     # Store as [user_id, mac_value] in database
@@ -34,7 +34,7 @@ def add_new_device():
 
 
 @secure()
-def get_devices():
+def get_devices(db):
     # Needs user token
     # SELECT * FROM devices WHERE userid = token.userid
     return Devices([Device("ab:cd:ef:gh:ij:kl:mn:op")]).json
