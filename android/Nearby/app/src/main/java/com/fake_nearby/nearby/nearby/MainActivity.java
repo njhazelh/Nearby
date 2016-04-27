@@ -91,13 +91,19 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
 
             // Login
             this.login();
-
         }
     }
 
     public void login() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));
+
+        this.addCurrentDevice();
+    }
+
+    public void addCurrentDevice() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        ApiRequests.addDevice(mBluetoothAdapter.getAddress());
     }
 
     public void getLocationPermission() {
@@ -155,13 +161,10 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         super.onResume();
 
         // Register the BroadcastReceiver
-        IntentFilter fltr = new IntentFilter();
-        fltr = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        fltr.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        fltr.addAction(BluetoothDevice.ACTION_FOUND);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
         System.out.println("onresume");
+        this.login();
     }
 
     protected void onPause() {
@@ -177,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
         }
-        this.login();
         System.out.println("ondestroy");
     }
     @Override

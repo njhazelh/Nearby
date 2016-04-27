@@ -26,8 +26,14 @@ public class ApiRequests {
 
     }
 
+    public static void addDevice(String mac) {
+        while (authToken.equals(""));
+        if (!authToken.equals("")) {
+            new AddDeviceTask().execute(mac, authToken);
+        }
+    }
+
     public static void doAuthRequest(String username, String password) {
-        System.out.println(ApiRequests.authToken);
         new AuthRequestTask().execute(username, password);
         System.out.println(ApiRequests.authToken);
     }

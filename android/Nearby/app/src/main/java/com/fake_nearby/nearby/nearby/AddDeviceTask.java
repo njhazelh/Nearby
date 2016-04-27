@@ -1,5 +1,6 @@
 package com.fake_nearby.nearby.nearby;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceActivity;
 
@@ -20,7 +21,7 @@ import okhttp3.Response;
 /**
  * Created by Lyn on 4/26/2016.
  */
-public class AuthRequestTask extends AsyncTask<String, Boolean, Boolean>  {
+public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final String baseUrl = "http://nearby.nick-jones.me/api";
 
@@ -34,23 +35,23 @@ public class AuthRequestTask extends AsyncTask<String, Boolean, Boolean>  {
     protected Boolean doInBackground(String... aParams) {
         final OkHttpClient client = new OkHttpClient();
         final Gson gson = new Gson();
-        JsonObject authJson = new JsonObject();
-        authJson.addProperty("username", aParams[0]);
-        authJson.addProperty("password", aParams[1]);
+        JsonObject addDevice = new JsonObject();
+        addDevice.addProperty("mac", aParams[0]);
+        System.out.println(aParams[0]);
 
-        RequestBody authBody = RequestBody.create(JSON, authJson.toString());
-        Request request = new Request.Builder().url(baseUrl + "/access").post(authBody).build();
+        RequestBody authBody = RequestBody.create(JSON, addDevice.toString());
+        Request request = new Request.Builder().url(baseUrl + "/devices").post(authBody).addHeader("Authentication", aParams[1]).build();
         try {
             Response response = client.newCall(request).execute();
             if (response.code() == 200) {
                 JsonParser parser = new JsonParser();
                 JsonElement element = parser.parse(response.body().string());
                 JsonObject jsonObject = element.getAsJsonObject();
-                ApiRequests.authToken = jsonObject.get("token").getAsString();
+                System.out.println(jsonObject.get("message").getAsString());
                 return true;
             }
             else {
-                System.out.println("Bad http response: auth "  + response.code());
+                System.out.println("Bad http response: add device " + response.code());
                 return false;
             }
         }
