@@ -26,13 +26,13 @@ class User(JSONResponse):
 
 
 @secure()
-def get_personal_info():
+def get_personal_info(db):
     # Needs user token
     # SELECT * FROM users WHERE id = token.userid
     return User(1, "Harry").json
 
 
-def create_new_user():
+def create_new_user(db):
     # Not authed
     # Rate-limited?
     # INSERT INTO users VALUE (user_info)
@@ -40,7 +40,7 @@ def create_new_user():
 
 
 @secure()
-def change_personal_info():
+def change_personal_info(db):
     # Needs user token
     # Needs body info
     # UPDATE users SET user_info=new_info WHERE user_id = token.userid
@@ -48,20 +48,20 @@ def change_personal_info():
 
 
 @secure()
-def delete_user():
+def delete_user(db):
     # Needs user token
     # DELETE FROM users WHERE user.id = token.userid
     return Message("I have deleted your user.  Why does everyone leave me?").json
 
 
-def get_user_info(user_id):
+def get_user_info(user_id, db):
     # Not authed?
     # SELECT * FROM users WHERE user.id = user_id
     return User(1, "Bob %d" % user_id).json
 
 
 @secure()
-def get_nearby_users():
+def get_nearby_users(db):
     # Needs user token
     # url params to specify timeframe?
     # SELECT * FROM users WHERE ??????? << TABLE JOINS?

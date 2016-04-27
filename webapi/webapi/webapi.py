@@ -3,6 +3,11 @@
 from bottle import request, response, app, run, hook
 from resources import access, devices, observations, users
 
+from bottle.ext import sqlalchemy
+from sqlalchemy import create_engine
+from data.db_models import Base
+from sqlalchemy.orm import sessionmaker
+
 
 @hook('before_request')
 def strip_path():
@@ -28,6 +33,11 @@ def setup_middleware(app):
 
 if __name__ == "__main__":
     app = app()
+    engine = create_engine("postgresql://django:svqVUoATZq@localhost:5432/nearby")
+    create_session = sessionmaker(bind=engine)
+    plugin = sqlalchemy.Plugin(engine, Base.metadata,
+        keyword='db', create=True, commit=True, use_kwargs=True)
+    app.install(plugin)
     setup_routing(app)
     app = setup_middleware(app)
     # add server='gunicorn' for deployment and remove reloader
