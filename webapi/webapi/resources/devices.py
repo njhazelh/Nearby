@@ -1,4 +1,9 @@
-from util.webshared import Message, JSONResponse, secure
+from util.webshared import Message, Error, JSONResponse, secure
+from bottle import request, response
+from util.validation import validate_mac
+from data.db_models import Device
+
+from sqlalchemy.orm.exc import NoResultFound
 
 
 class Devices(JSONResponse):
@@ -13,28 +18,51 @@ class Devices(JSONResponse):
         }
 
 
-class Device(JSONResponse):
+class DeviceJSON(JSONResponse):
 
-    def __init__(self, device):
-        self.device = device
-
-    @property
-    def json(self):
-        return self.device
+    def __init__(self, mac):
+        self.mac = mac
 
 
 @secure()
 def add_new_device(db):
-    # Needs user token
-    # Needs {'mac': 'mac_value'} in body
-    # Store as [user_id, mac_value] in database
-    # - DELETE FROM devices WHERE userid = token.userid
-    # - INSERT INTO devices VALUE (token.userid, mac_value)
-    return Message("Device associated with your account. Forgot the others").json
+    user = request.environ.get('user_info')
+    if user is None:
+        raise RuntimeError("add_new_device should always have user_info")
+
+    try:
+        data = request.json
+        if data is None:
+            raise ValueError
+
+        if 'mac' not in data or not validate_mac(data['mac']):
+            raise ValueError
+
+        mac_address = data['mac']
+    except ValueError:
+        response.status = 400
+        return Error("Missing JSON with valid mac").json
+
+    count = db.query(Device).filter(Device.mac == mac_address).count()
+    if count != 0:
+        response.status = 400
+        return Error("Device with MAC '%s' already exists" % mac_address).json
+
+    try:
+        device = db.query(Device).filter(Device.user_id == user.id).one()
+        device.mac = mac_address
+    except NoResultFound:
+        device = Device(user_id=user.id, mac=mac_address)
+        db.add(device)
+    db.commit()
+    return DeviceJSON(device.mac).json
 
 
 @secure()
 def get_devices(db):
-    # Needs user token
-    # SELECT * FROM devices WHERE userid = token.userid
-    return Devices([Device("ab:cd:ef:gh:ij:kl:mn:op")]).json
+    user = request.environ.get('user_info')
+    if user is None:
+        raise RuntimeError("get_devices should always have user_info")
+    devices = db.query(Device).filter(Device.user_id == user.id).all()
+    devices = [DeviceJSON(d.mac) for d in devices]
+    return Devices(devices).json
