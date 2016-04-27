@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -87,7 +88,15 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
                 }
             });
 
+            // Login
+            this.login();
+
         }
+    }
+
+    public void login() {
+        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));
     }
 
     public void getLocationPermission() {

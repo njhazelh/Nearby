@@ -40,7 +40,30 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends AppCompatPreferenceActivity {
+public class SettingsActivity extends AppCompatPreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                          String key) {
+        System.out.println("shared pref changed!");
+        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        try {
+            switch(key) {
+                case "firstlast":
+                    ApiRequests.doDisplayNameRequest();
+                    break;
+                case "username":
+                    ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));
+                    break;
+                case "password":
+                    ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));
+                    break;
+            }
+        }
+        catch (Exception e) {
+            System.out.println("Something went wrong in API");
+        }
+    }
+
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -52,91 +75,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // For all other preferences, set the summary to the value's
             // simple string representation.
             preference.setSummary(stringValue);
-            try {
-                URL url = new URL("nearby.nick-jones.me/api/users?".concat(stringValue));
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                if (preference.getKey().equals("username")) {
-                    urlConnection.setRequestMethod("POST");
-                }
-                else if (preference.getKey().equals("firstlast")) {
-                    urlConnection.setRequestMethod("PUT");
-                }
-                urlConnection.connect();
-
-                // DEBUG
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    System.out.println("bad");
-                }
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    System.out.println("bad");
-                }
-                System.out.println(buffer.toString());
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-                System.out.println("Something went wrong in API");
-            }
             return true;
         }
     };
-
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-                                          String key) {
-        System.out.println("shared pref changed!");
-        try {
-            URL url = new URL("nearby.nick-jones.me/api/users?".concat(sharedPreferences.getString(key, "")));
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (key.equals("username")) {
-                urlConnection.setRequestMethod("POST");
-            }
-            else if (key.equals("firstlast")) {
-                urlConnection.setRequestMethod("PUT");
-            }
-            urlConnection.connect();
-
-            // DEBUG
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                System.out.println("bad");
-            }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                System.out.println("bad");
-            }
-            System.out.println(buffer.toString());
-        }
-        catch (Exception e) {
-            System.out.println("Something went wrong in API");
-        }
-    }
 
     /**
      * Helper method to determine if the device has an extra-large screen. For
@@ -227,8 +168,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("username"));
             bindPreferenceSummaryToValue(findPreference("firstlast"));
+            bindPreferenceSummaryToValue(findPreference("username"));
+            bindPreferenceSummaryToValue(findPreference("password"));
         }
 
         @Override

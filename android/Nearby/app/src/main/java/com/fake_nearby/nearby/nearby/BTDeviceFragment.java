@@ -77,16 +77,19 @@ public class BTDeviceFragment extends Fragment {
         // TODO: API CALL HERE
         // make the call and identify the user as either a registered/id'd person
         // or someone who should be identified
+        if (name == null) {
+            name = "";
+        }
         String devTag = name + "\n" + address;
         String apiName = "";
-        if (apiName != "") {
+        if (!apiName.equals("")) {
             devTag = apiName;
         }
         else if (paired) {
             devTag = "You: " + devTag;
         }
         else {
-            devTag = "Unknown user: " + devTag;
+            devTag = "Unknown user " + devTag;
         }
 
         // add rssi for non-paired devices
