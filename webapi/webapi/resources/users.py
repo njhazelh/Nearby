@@ -162,19 +162,27 @@ def get_nearby_users(db):
         WITH data AS (
             SELECT * FROM observations o
             WHERE age(CURRENT_TIMESTAMP, o.timestamp) < INTERVAL '1 day'
+        ), full_set AS (
+            -- People Seen by target_user
+            SELECT u.* FROM data d
+            JOIN devices dev on dev.id = d.device_id
+            JOIN users u ON u.id = dev.user_id
+            WHERE d.user_id = :target_user
+
+            UNION ALL
+
+            -- People that saw target_user
+            SELECT u.* FROM data d
+            JOIN users u ON u.id = d.user_id
+            JOIN devices dev ON dev.id = d.device_id
+            WHERE dev.user_id = :target_user
         )
 
-        SELECT u.* FROM data d
-        JOIN devices dev on dev.id = d.device_id
-        JOIN users u ON u.id = dev.user_id
-        WHERE d.user_id = :target_user
-
-        UNION
-
-        SELECT u.* FROM data d
-        JOIN users u ON u.id = d.user_id
-        JOIN devices dev ON dev.id = d.device_id
-        WHERE dev.user_id = :target_user;
+        -- Combine and order by rate of occurance
+        SELECT *, COUNT(id) AS mycount
+        FROM full_set
+        GROUP BY id, username, first_name, last_name, password_hash
+        ORDER BY mycount DESC
     """)
     query = query.bindparams(target_user=user.id)
     seen = db.execute(query).fetchall()
