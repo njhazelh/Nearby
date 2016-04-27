@@ -16,19 +16,34 @@ from sqlalchemy.sql import text
 from data.db_models import User
 
 
-class Users(JSONResponse):
+class UsersJSON(JSONResponse):
+
+    """
+    An Object for generating JSON for a list of Users.
+    """
 
     def __init__(self, users):
         self.users = users
 
-    @property
-    def json(self):
-        return {
-            "users": [u.json for u in self.users]
-        }
+    @staticmethod
+    def from_db(db_users):
+        """
+        Convert a list of database user info to a list of JSON user info
+        """
+        return UsersJSON([UserJSON.from_db(u) for u in db_users])
 
 
 class UserJSON(JSONResponse):
+
+    """
+    An Object for generating JSON for a single User.
+    {
+        "id": <integer>,
+        "username": <string>,
+        "first_name": <string>,
+        "last_name": <password>,
+    }
+    """
 
     def __init__(self, user_id, username, first_name, last_name):
         self.id = user_id
@@ -38,19 +53,43 @@ class UserJSON(JSONResponse):
 
     @staticmethod
     def from_db(db_user):
+        """
+        Convert a database user to JSON
+        """
         return UserJSON(db_user.id, db_user.username,
-            db_user.first_name, db_user.last_name)
+                        db_user.first_name, db_user.last_name)
 
 
 @secure()
 def get_personal_info(db):
-    # Needs user token
-    # SELECT * FROM users WHERE id = token.userid
+    """
+    Get the personal information for the logged in user.
+
+    :param db: The database session
+    :returns: Information of logged in user in a dictionary format.
+    """
     return UserJSON.from_db(request.environ['user_info']).json
 
 
 def create_new_user(db):
+    """
+    Create a new User.  JSON must include all fields.
+
+    JSON body with all fields is:
+
+    {
+        "username": <string>,
+        "password": <string>,
+        "first_name": <string>,
+        "last_name": <string>,
+    }
+
+    :param db: The database session
+    :returns: JSON containing the created user info if successful
+        Otherwise, returns error information in JSON format.
+    """
     try:
+        # Access and validate new user info from JSON body
         data = request.json
         if data is None:
             raise ValueError
@@ -69,17 +108,21 @@ def create_new_user(db):
         first_name = data['first_name']
         last_name = data['last_name']
     except ValueError:
-        response.status = 400
+        response.status = 400  # Bad Request
         return Error("Missing JSON with valid username, password, " +
-            "first_name, last_name").json
+                     "first_name, last_name").json
 
+    # Check that the username doesn't already exist
     count = db.query(User).filter(User.username == username).count()
     if count != 0:
         response.status = 400
         return Error("'%s' already exists" % username).json
 
-    user = User(username=username, password_hash=password,
-        first_name=first_name, last_name=last_name)
+    # Insert User into database
+    user = User(username=username,
+                password_hash=password,
+                first_name=first_name,
+                last_name=last_name)
     db.add(user)
     db.commit()
 
@@ -88,14 +131,34 @@ def create_new_user(db):
 
 @secure()
 def change_personal_info(db):
+    """
+    A resource for changing user info.  Update request can contain 0 or more
+    fields to change the user.  Missing fields will not be updated.
+
+    JSON body with all fields is:
+
+    {
+        "username": <string>,
+        "password": <string>,
+        "first_name": <string>,
+        "last_name": <string>,
+    }
+
+    :param db: The database session
+    :returns: Error JSON on failure or updated user JSON on success.
+    """
+
+    # Get User info from request environment.
     user = request.environ.get('user_info')
     if user is None:
         raise RuntimeError('change_personal_info should always have user_info')
 
+    # Get Update JSON from body. Return unchanged user if no body.
     data = request.json
     if data is None:
         return UserJSON.from_db(user).json
 
+    # Validate JSON body
     try:
         if 'username' in data and not validate_username(data['username']):
             raise ValueError
@@ -109,22 +172,19 @@ def change_personal_info(db):
         response.status = 400
         return Error("Update contains invalid data").json
 
-
+    # Check username for originality if changing
     username = data.get('username', user.username)
-    password = data.get('password', user.password_hash)
-    first_name = data.get('first_name', user.first_name)
-    last_name = data.get('last_name', user.last_name)
-
     if username != user.username:
         count = db.query(User).filter(User.username == username).count()
         if count != 0:
             response.status = 400
             return Error("'%s' already exists" % username).json
 
+    # Update fields and send to database
     user.username = username
-    user.password_hash = password
-    user.first_name = first_name
-    user.last_name = last_name
+    user.password_hash = data.get('password', user.password_hash)
+    user.first_name = data.get('first_name', user.first_name)
+    user.last_name = data.get('last_name', user.last_name)
     db.commit()
 
     return UserJSON.from_db(user).json
@@ -132,14 +192,27 @@ def change_personal_info(db):
 
 @secure()
 def delete_user(db):
+    """
+    Delete the account of the currently logged in user.
+
+    :param db: The database session
+    :returns: MessageJSON indicating success.
+    """
     user = request.environ.get('user_info')
     if user is None:
         raise RuntimeError("delete_user should always have user_info")
     db.delete(user)
-    return Message("I have deleted your user.  Why does everyone leave me?").json
+    return Message("User account deleted.  Why does everyone leave me?").json
 
 
 def get_user_info(user_id, db):
+    """
+    Get the information of a specific user identified by `user_id`.
+
+    :param user_id: The user_id of the user to get info for.
+    :param db: The database session.
+    :returns: Error JSON on user not found, else User JSON on success.
+    """
     user = db.query(User).get(user_id)
     if user is None:
         response.status = 404
@@ -150,15 +223,21 @@ def get_user_info(user_id, db):
 
 @secure()
 def get_nearby_users(db):
-    # Needs user token
-    # url params to specify timeframe?
-    # SELECT * FROM users WHERE ??????? << TABLE JOINS?
+    """
+    Get the users that have seen the current user or been seen by the current
+    user within a recent period (1 day).
+
+    :param db: The database session
+    :returns: A list of recently nearby users. Ordered by number of observations
+        regarding them.
+    """
+    # Get User info from request environment.  Needed for user.id
     user = request.environ.get('user_info')
     if user is None:
         raise RuntimeError("get_nearby_users should always have user_info")
 
     query = text(
-    """
+        """
         WITH data AS (
             SELECT * FROM observations o
             WHERE age(CURRENT_TIMESTAMP, o.timestamp) < INTERVAL '1 day'
@@ -186,5 +265,4 @@ def get_nearby_users(db):
     """)
     query = query.bindparams(target_user=user.id)
     seen = db.execute(query).fetchall()
-    seen = [UserJSON.from_db(u) for u in seen]
-    return Users(seen).json
+    return UsersJSON.from_db(seen).json

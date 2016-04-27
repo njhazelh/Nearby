@@ -11,10 +11,18 @@ from sqlalchemy.orm import sessionmaker
 
 @hook('before_request')
 def strip_path():
+    """
+    pre routing hook to make "/x/y/z/" the same as "/x/y/z"
+    """
     request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
 
 def setup_routing(app):
+    """
+    Configure url routing for application
+
+    :param app: The bottle application object
+    """
     app.route('/api/access', 'POST', access.login)
     app.route('/api/access', 'DELETE', access.logout)
     app.route('/api/users', 'GET', users.get_personal_info)
@@ -28,17 +36,15 @@ def setup_routing(app):
     app.route('/api/observations', 'POST', observations.record_observation)
 
 
-def setup_middleware(app):
-    return app
-
 if __name__ == "__main__":
     app = app()
-    engine = create_engine("postgresql://django:svqVUoATZq@localhost:5432/nearby")
+    engine = create_engine(
+        "postgresql://django:svqVUoATZq@localhost:5432/nearby")
     create_session = sessionmaker(bind=engine)
     plugin = sqlalchemy.Plugin(engine, Base.metadata,
-        keyword='db', create=True, commit=True, use_kwargs=True)
+                               keyword='db', create=True,
+                               commit=True, use_kwargs=True)
     app.install(plugin)
     setup_routing(app)
-    app = setup_middleware(app)
     # add server='gunicorn' for deployment and remove reloader
     run(host='localhost', port=9000, app=app, reloader=True, debug=True)
