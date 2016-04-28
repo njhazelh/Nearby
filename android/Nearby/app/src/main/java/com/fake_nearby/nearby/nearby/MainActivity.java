@@ -103,7 +103,11 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
 
     public void addCurrentDevice() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        ApiRequests.addDevice(mBluetoothAdapter.getAddress());
+        String addr = mBluetoothAdapter.getAddress();
+        if (addr.equals("02:00:00:00:00:00")) {
+            addr = android.provider.Settings.Secure.getString(getContentResolver(), "bluetooth_address");
+        }
+        ApiRequests.addDevice(addr);
     }
 
     public void getLocationPermission() {

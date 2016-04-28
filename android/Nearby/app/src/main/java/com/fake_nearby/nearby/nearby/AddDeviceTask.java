@@ -59,7 +59,7 @@ public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
                 return false;
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             System.out.println("Bad api call");
             return false;
         }
