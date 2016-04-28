@@ -35,7 +35,7 @@ public class CreateAcctActivity extends PreferenceActivity implements SharedPref
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                    ApiRequests.createAccount(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"), prefs.getString("firstlast", "messed up"));
+                    ApiRequests.accountService(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"), prefs.getString("firstlast", "messed up"), "create");
                     return true;
                 }
             });

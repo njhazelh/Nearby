@@ -20,7 +20,7 @@ import okhttp3.Response;
 /**
  * Created by Lyn on 4/26/2016.
  */
-public class CreateAcctTask extends AsyncTask<String, Boolean, Boolean>  {
+public class AcctTask extends AsyncTask<String, Boolean, Boolean>  {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     protected void onPreExecute() {
@@ -40,14 +40,24 @@ public class CreateAcctTask extends AsyncTask<String, Boolean, Boolean>  {
         authJson.addProperty("last_name", aParams[3]);
 
         RequestBody authBody = RequestBody.create(JSON, authJson.toString());
-        Request request = new Request.Builder().url(ApiRequests.baseUrl + "/users").post(authBody).build();
+        Request request;
+
+        switch(aParams[4]) {
+            case "create":
+                request = new Request.Builder().url(ApiRequests.baseUrl + "/users").post(authBody).build();
+                break;
+            default: //case "modify":
+                request = new Request.Builder().url(ApiRequests.baseUrl + "/users").put(authBody).addHeader("Authentication", ApiRequests.authToken).build();
+                break;
+        }
+
         try {
             Response response = client.newCall(request).execute();
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(response.body().string());
             JsonObject jsonObject = element.getAsJsonObject();
             if (response.code() == 200) {
-                System.out.println(jsonObject.get("message").getAsString());
+                //System.out.println(jsonObject.get("message").getAsString());
                 return true;
             }
             else if (response.code() == 400) {
@@ -55,7 +65,7 @@ public class CreateAcctTask extends AsyncTask<String, Boolean, Boolean>  {
                 return false;
             }
             else {
-                System.out.println("Bad http response: auth "  + response.code());
+                System.out.println("Bad http response: acct task "  + response.code());
                 System.out.println(authBody.toString());
                 System.out.println(request.toString());
                 return false;
