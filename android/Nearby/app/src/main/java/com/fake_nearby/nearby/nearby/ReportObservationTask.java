@@ -39,8 +39,8 @@ public class ReportObservationTask extends AsyncTask<String, Boolean, Boolean>  
         reportDevice.addProperty("timestamp", aParams[0]);
         reportDevice.addProperty("mac", aParams[1]);
         reportDevice.addProperty("rssi", aParams[2]);
-        System.out.println(aParams[0]);
 
+        System.out.println("reporting " + aParams[1]);
         RequestBody authBody = RequestBody.create(JSON, reportDevice.toString());
         Request request = new Request.Builder().url(ApiRequests.baseUrl + "/observations").post(authBody).addHeader("Authentication", ApiRequests.authToken).build();
         try {

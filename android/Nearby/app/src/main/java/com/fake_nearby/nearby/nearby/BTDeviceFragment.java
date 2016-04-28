@@ -42,6 +42,7 @@ public class BTDeviceFragment extends Fragment {
     private ArrayAdapter<String> mArrayAdapter;
     private int REQUEST_ENABLE_BT = 1;
     private ArrayList<String> devicesSeen = new ArrayList<String>();
+    static final String ALONE = "Nobody nearby right now :(";
 
 
     /**
@@ -83,6 +84,7 @@ public class BTDeviceFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ArrayList<String> defItems = new ArrayList<String>();
+        defItems.add(ALONE);
         mArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.fragment_btdevice, R.id.content1, defItems);
         View view = inflater.inflate(R.layout.fragment_btdevice_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.fragment_btdevice_list);
@@ -160,9 +162,12 @@ public class BTDeviceFragment extends Fragment {
                     JsonArray all_users = jsonObject.get("users").getAsJsonArray();
                     for (JsonElement user : all_users) {
                         String name = user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString();
-                        if (mArrayAdapter.getPosition(name) == 1) {
+                        if (mArrayAdapter.getPosition(name) == -1) {
                             mArrayAdapter.add(user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString());
                             mArrayAdapter.notifyDataSetChanged();
+                            if (devicesSeen.size() == 0) {
+                                mArrayAdapter.remove(ALONE);
+                            }
                         }
                     }
                     return true;
