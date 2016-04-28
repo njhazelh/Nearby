@@ -8,6 +8,8 @@ from sqlalchemy import create_engine
 from data.db_models import Base
 from sqlalchemy.orm import sessionmaker
 
+import argparse
+
 
 @hook('before_request')
 def strip_path():
@@ -37,7 +39,14 @@ def setup_routing(app):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Run the webapi server')
+    parser.add_argument('--dev', action='store_true',
+        help="Run the server in development mode with debugging. ")
+    args = parser.parse_args()
+
     app = app()
+
+    # Setup Database and sqlalchemcy-bottle plugin
     engine = create_engine(
         "postgresql://django:svqVUoATZq@localhost:5432/nearby")
     create_session = sessionmaker(bind=engine)
@@ -45,6 +54,10 @@ if __name__ == "__main__":
                                keyword='db', create=True,
                                commit=True, use_kwargs=True)
     app.install(plugin)
+
     setup_routing(app)
-    # add server='gunicorn' for deployment and remove reloader
-    run(host='localhost', port=9000, app=app, reloader=True, debug=True)
+
+    if args.dev:
+        run(host='localhost', port=9000, app=app, reloader=True, debug=True)
+    else:
+        run(server='gunicorn', host='localhost', port=9000, app=app)
