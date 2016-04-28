@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                 BTDevice btd = new BTDevice(device.getName(), device.getAddress(), rssi, false);
-                // Add the name and address to an array adapter to show in a ListView
+                // Add the name and address to an array adapter to show in the ListView
                 displayDevice(btd);
                 System.out.println("found something");
             }
@@ -96,21 +96,25 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
 
     public void login() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // send the login request
         ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));
-
+        // register this device's MAC with your account
         this.addCurrentDevice();
     }
 
     public void addCurrentDevice() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String addr = mBluetoothAdapter.getAddress();
+        // compatibility fix for marshmallow: always returns that address when getAddress() is called
         if (addr.equals("02:00:00:00:00:00")) {
             addr = android.provider.Settings.Secure.getString(getContentResolver(), "bluetooth_address");
         }
+        // make the request to add device to account
         ApiRequests.addDevice(addr);
     }
 
     public void getLocationPermission() {
+        // if location permission either hasn't been granted or was revoked, ask for it
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -132,12 +136,13 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // modify profile
         if (id == R.id.action_profile) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         }
 
+        // create account
         if (id == R.id.action_create_account) {
             Intent intent = new Intent(this, CreateAcctActivity.class);
             startActivity(intent);
@@ -148,7 +153,8 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
     }
 
     public void doBTScan() {
-//        System.out.println(mArrayAdapter.getCount());
+        // OLD: get paired devices
+        //        System.out.println(mArrayAdapter.getCount());
         // get your devices
         /*
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -159,16 +165,18 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
             }
         }
         */
-        // get other available devices
+
+        // get discoverable devices devices; ACTION_FOUND will automatically kick to registered receiver
         mBluetoothAdapter.startDiscovery();
     }
 
-    // @param rssi: the signal strength (paired devices will always send in 999, a value which will be ignored)
+    // calls down to display the device in the listview
     public void displayDevice(BTDevice btd) {
         BTDeviceFragment frag = (BTDeviceFragment) getSupportFragmentManager().findFragmentById(R.id.btdevice_container);
         frag.displayDevice(btd);
     }
 
+    /* BELOW: handlers for pausing/destroying to ensure receiver is properly registered */
     protected void onResume() {
         super.onResume();
 

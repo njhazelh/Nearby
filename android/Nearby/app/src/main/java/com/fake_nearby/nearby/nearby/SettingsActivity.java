@@ -15,6 +15,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 .replace(android.R.id.content, new SettingsFragment())
                 .commit();
 
+        // register listener for shared preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
     }
@@ -24,6 +25,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                                           String key) {
         System.out.println("shared pref changed!");
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // if anything is changed for the display name, username, or password, send a put request to the server
         try {
             if (key.equals("firstlast") || key.equals("username") || key.equals("password")) {
                 ApiRequests.accountService(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"), prefs.getString("firstlast", "messed up"), "modify");

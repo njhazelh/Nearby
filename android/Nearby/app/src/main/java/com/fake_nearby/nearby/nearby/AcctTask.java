@@ -34,6 +34,8 @@ public class AcctTask extends AsyncTask<String, Boolean, Boolean>  {
         final OkHttpClient client = new OkHttpClient();
         final Gson gson = new Gson();
         JsonObject authJson = new JsonObject();
+        // if an account is being created, all of these are necessary
+        // if it's just being modified, we don't _need_ all of these, but including them doesn't hurt
         authJson.addProperty("username", aParams[0]);
         authJson.addProperty("password", aParams[1]);
         authJson.addProperty("first_name", aParams[2]);
@@ -42,6 +44,8 @@ public class AcctTask extends AsyncTask<String, Boolean, Boolean>  {
         RequestBody authBody = RequestBody.create(JSON, authJson.toString());
         Request request;
 
+        // switch based on modification or creation of an account; adds auth token when appropriate
+        // if an account is created, it'll be logged in upon return to main screen
         switch(aParams[4]) {
             case "create":
                 request = new Request.Builder().url(ApiRequests.baseUrl + "/users").post(authBody).build();

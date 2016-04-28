@@ -11,7 +11,7 @@ public class BTDevice {
 
     public BTDevice(String givenName, String mac, int rssi, boolean paired) {
         if (givenName == null) {
-            this.name = "";
+            this.name = ""; // TODO: "Unknown user"?
         }
         else {
             this.name = givenName;
@@ -22,6 +22,7 @@ public class BTDevice {
     }
 
     @Override
+    // old; used when printing everybody in an area instead of just known users
     public String toString() {
         return this.name + "\n" + this.mac + "\n" + this.rssi + " dBm";
     }

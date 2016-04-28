@@ -20,6 +20,7 @@ public class CreateAcctActivity extends PreferenceActivity implements SharedPref
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
+        // this is handled in settingsactivity and the settingsfragment here
     }
 
     public static class SettingsFragment extends PreferenceFragment {
@@ -31,6 +32,8 @@ public class CreateAcctActivity extends PreferenceActivity implements SharedPref
             addPreferencesFromResource(R.xml.create_prefs);
 
             Preference button = findPreference("closeandsave");
+            // if the "save" button is hit, set a post request to the server to create a new account
+            // because it's shared prefs, this will auto-update the logged in account in "modify profile"
             button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {

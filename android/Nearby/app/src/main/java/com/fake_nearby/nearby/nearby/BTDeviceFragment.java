@@ -40,7 +40,6 @@ public class BTDeviceFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private ArrayAdapter<String> mArrayAdapter;
-    private int REQUEST_ENABLE_BT = 1;
     private ArrayList<String> devicesSeen = new ArrayList<String>();
     static final String ALONE = "Nobody nearby right now :(";
 
@@ -71,10 +70,13 @@ public class BTDeviceFragment extends Fragment {
 
     }
 
+    // display a device in the listview by querying server for saved name
     public void displayDevice(BTDevice btd) {
+        // do duplicate checking with mac addresses
         if (!devicesSeen.contains(btd.mac)) {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
             String now = df.format(new Date());
+            // report observations and get names of anyone observed
             ApiRequests.reportObservation(now, btd.mac, btd.rssi);
             new GetNamesTask().execute(btd);
         }
@@ -91,7 +93,7 @@ public class BTDeviceFragment extends Fragment {
         listView.setAdapter(mArrayAdapter);
 
 
-        // TODO
+        // TODO: would need to set onclicklistener to see more profile information for users
         /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -103,7 +105,7 @@ public class BTDeviceFragment extends Fragment {
         return view;
     }
 
-    /*
+    /* UNUSED
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -151,26 +153,28 @@ public class BTDeviceFragment extends Fragment {
 
         protected Boolean doInBackground(BTDevice... aParams) {
             final OkHttpClient client = new OkHttpClient();
-
+            // get names of nearby users
             Request request = new Request.Builder().url(ApiRequests.baseUrl + "/users/nearby").addHeader("Authentication", ApiRequests.authToken).build();
             try {
                 Response response = client.newCall(request).execute();
-                if (response.code() == 200) {
+                if (response.code() == 200) { // if it worked, parse the array and display all
                     JsonParser parser = new JsonParser();
                     JsonElement element = parser.parse(response.body().string());
                     JsonObject jsonObject = element.getAsJsonObject();
                     final JsonArray all_users = jsonObject.get("users").getAsJsonArray();
-
+                    // ui updates cannot be done on a separate thread, so return to the main one
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             for (JsonElement user : all_users) {
+                                // display every user's full name if they haven't been displayed already
                                 String name = user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString();
 
                                 if (mArrayAdapter.getPosition(name) == -1) {
                                     mArrayAdapter.add(user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString());
                                     mArrayAdapter.notifyDataSetChanged();
                                     if (devicesSeen.size() == 0) {
+                                        // remove the "haven't seen anybody" message
                                         mArrayAdapter.remove(ALONE);
                                     }
                                 }
@@ -182,7 +186,7 @@ public class BTDeviceFragment extends Fragment {
                     return true;
                 }
                 else {
-                    System.out.println("Bad http response: auth "  + response.code());
+                    System.out.println("Bad http response: get names "  + response.code());
                     return false;
                 }
             }

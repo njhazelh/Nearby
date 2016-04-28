@@ -22,23 +22,27 @@ public class ApiRequests {
     private final Gson gson = new Gson();
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
+    // report observations
     public static void reportObservation(String timestamp, String mac, int rssi) {
         if (!authToken.equals("")) {
             new ReportObservationTask().execute(timestamp, mac, Integer.toString(rssi));
         }
     }
 
+    // register the MAC of this user
     public static void addDevice(String mac) {
         if (!authToken.equals("")) {
             new AddDeviceTask().execute(mac);
         }
     }
 
+    // do account creation or modification
     public static void accountService(String username, String password, String fullname, String action) {
         String[] name = fullname.split("\\s+");
         new AcctTask().execute(username, password, name[0], name[1], action);
     }
 
+    // log in and get authentication token
     public static void doAuthRequest(String username, String password) {
         new AuthRequestTask().execute(username, password);
         System.out.println(ApiRequests.authToken);
