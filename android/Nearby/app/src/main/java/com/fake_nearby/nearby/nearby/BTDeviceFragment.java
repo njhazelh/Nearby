@@ -1,37 +1,30 @@
 package com.fake_nearby.nearby.nearby;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import com.fake_nearby.nearby.nearby.dummy.DummyContent;
 import com.fake_nearby.nearby.nearby.dummy.DummyContent.DummyItem;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * A fragment representing a list of Items.
@@ -58,7 +51,6 @@ public class BTDeviceFragment extends Fragment {
     public BTDeviceFragment() {
     }
 
-    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static BTDeviceFragment newInstance(int columnCount) {
         BTDeviceFragment fragment = new BTDeviceFragment();
@@ -79,17 +71,11 @@ public class BTDeviceFragment extends Fragment {
     }
 
     public void displayDevice(BTDevice btd) {
-        String devTag = btd.toString();
-        if (btd.name.equals("")) {
-            devTag = "Unknown user " + devTag;
-        }
         if (!devicesSeen.contains(btd.mac)) {
-            devicesSeen.add(btd.mac);
-            mArrayAdapter.add(devTag);
-            mArrayAdapter.notifyDataSetChanged();
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
             String now = df.format(new Date());
             ApiRequests.reportObservation(now, btd.mac, btd.rssi);
+            new GetNamesTask().execute(btd);
         }
     }
 
@@ -147,4 +133,56 @@ public class BTDeviceFragment extends Fragment {
         // TODO: Update argument type and name
         void onListFragmentInteraction(DummyItem item);
     }
+
+    /**
+     * Created by Lyn on 4/26/2016.
+     */
+    private class GetNamesTask extends AsyncTask<BTDevice, Boolean, Boolean> {
+        public final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+        protected void onPreExecute() {
+            // perhaps show a dialog
+            // with a progress bar
+            // to let your users know
+            // something is happening
+        }
+
+        protected Boolean doInBackground(BTDevice... aParams) {
+            final OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder().url(ApiRequests.baseUrl + "/users/nearby").addHeader("Authentication", ApiRequests.authToken).build();
+            try {
+                Response response = client.newCall(request).execute();
+                if (response.code() == 200) {
+                    JsonParser parser = new JsonParser();
+                    JsonElement element = parser.parse(response.body().string());
+                    JsonObject jsonObject = element.getAsJsonObject();
+                    JsonArray all_users = jsonObject.get("users").getAsJsonArray();
+                    for (JsonElement user : all_users) {
+                        String name = user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString();
+                        if (mArrayAdapter.getPosition(name) == 1) {
+                            mArrayAdapter.add(user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString());
+                            mArrayAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    return true;
+                }
+                else {
+                    System.out.println("Bad http response: auth "  + response.code());
+                    return false;
+                }
+            }
+            catch (IOException e) {
+                System.out.println("Bad api call");
+                return false;
+            }
+        }
+
+        protected void onPostExecute(String token) {
+            // background work is finished,
+            // we can update the UI here
+            // including removing the dialog
+        }
+    }
+
 }

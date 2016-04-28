@@ -30,7 +30,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         try {
             switch(key) {
                 case "firstlast":
-                    ApiRequests.doDisplayNameRequest();
+                    //ApiRequests.doDisplayNameRequest();
                     break;
                 case "username":
                     ApiRequests.doAuthRequest(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"));

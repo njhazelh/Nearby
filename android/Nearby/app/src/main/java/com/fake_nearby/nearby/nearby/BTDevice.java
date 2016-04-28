@@ -10,7 +10,6 @@ public class BTDevice {
     public boolean paired;
 
     public BTDevice(String givenName, String mac, int rssi, boolean paired) {
-        //  TODO: api call to get name
         if (givenName == null) {
             this.name = "";
         }

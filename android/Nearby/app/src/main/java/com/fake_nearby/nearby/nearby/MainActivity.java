@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
     protected void onDestroy() {
         super.onDestroy();
         if (mReceiver != null) {
-            unregisterReceiver(mReceiver);
+            try {unregisterReceiver(mReceiver);} catch(IllegalArgumentException e) { }
         }
         System.out.println("ondestroy");
     }

@@ -22,10 +22,6 @@ public class ApiRequests {
     private final Gson gson = new Gson();
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    public static void doDisplayNameRequest() {
-
-    }
-
     public static void reportObservation(String timestamp, String mac, int rssi) {
         if (!authToken.equals("")) {
             new ReportObservationTask().execute(timestamp, mac, Integer.toString(rssi));
