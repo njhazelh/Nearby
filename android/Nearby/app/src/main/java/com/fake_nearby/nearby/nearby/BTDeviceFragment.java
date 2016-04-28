@@ -159,17 +159,26 @@ public class BTDeviceFragment extends Fragment {
                     JsonParser parser = new JsonParser();
                     JsonElement element = parser.parse(response.body().string());
                     JsonObject jsonObject = element.getAsJsonObject();
-                    JsonArray all_users = jsonObject.get("users").getAsJsonArray();
-                    for (JsonElement user : all_users) {
-                        String name = user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString();
-                        if (mArrayAdapter.getPosition(name) == -1) {
-                            mArrayAdapter.add(user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString());
-                            mArrayAdapter.notifyDataSetChanged();
-                            if (devicesSeen.size() == 0) {
-                                mArrayAdapter.remove(ALONE);
+                    final JsonArray all_users = jsonObject.get("users").getAsJsonArray();
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (JsonElement user : all_users) {
+                                String name = user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString();
+
+                                if (mArrayAdapter.getPosition(name) == -1) {
+                                    mArrayAdapter.add(user.getAsJsonObject().get("first_name").getAsString() + " " + user.getAsJsonObject().get("last_name").getAsString());
+                                    mArrayAdapter.notifyDataSetChanged();
+                                    if (devicesSeen.size() == 0) {
+                                        mArrayAdapter.remove(ALONE);
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
+
+
                     return true;
                 }
                 else {
