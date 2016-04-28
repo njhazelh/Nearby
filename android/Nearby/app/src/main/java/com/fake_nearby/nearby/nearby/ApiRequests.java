@@ -38,4 +38,9 @@ public class ApiRequests {
         new AuthRequestTask().execute(username, password);
         System.out.println(ApiRequests.authToken);
     }
+
+    public static void createAccount(String username, String password, String fullname) {
+        String[] name = fullname.split("\\s+");
+        new CreateAcctTask().execute(username, password, name[0], name[1]);
+    }
 }

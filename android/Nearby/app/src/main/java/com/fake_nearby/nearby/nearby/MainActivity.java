@@ -21,8 +21,6 @@ import android.widget.Toast;
 
 import com.fake_nearby.nearby.nearby.dummy.DummyContent;
 
-import java.util.Set;
-
 public class MainActivity extends AppCompatActivity implements BTDeviceFragment.OnListFragmentInteractionListener {
     private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private ArrayAdapter<String> mArrayAdapter;
@@ -74,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
             startActivityForResult(discoverableIntent, 1);
 
+            // get the location permission
             this.getLocationPermission();
 
             // Register the BroadcastReceiver
@@ -135,6 +134,12 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
             startActivity(intent);
         }
 
+        if (id == R.id.action_create_account) {
+            Intent intent = new Intent(this, CreateAcctActivity.class);
+            startActivity(intent);
+        }
+
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -173,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements BTDeviceFragment.
     protected void onPause() {
         super.onPause();
         if (mReceiver != null) {
-            unregisterReceiver(mReceiver);
+            try {unregisterReceiver(mReceiver);} catch(IllegalArgumentException e) { }
         }
         System.out.println("onpause");
     }

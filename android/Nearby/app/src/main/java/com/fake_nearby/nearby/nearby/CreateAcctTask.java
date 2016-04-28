@@ -1,6 +1,5 @@
 package com.fake_nearby.nearby.nearby;
 
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceActivity;
 
@@ -21,11 +20,10 @@ import okhttp3.Response;
 /**
  * Created by Lyn on 4/26/2016.
  */
-public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
+public class CreateAcctTask extends AsyncTask<String, Boolean, Boolean>  {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     protected void onPreExecute() {
-        while (ApiRequests.authToken.equals(""));
         // perhaps show a dialog
         // with a progress bar
         // to let your users know
@@ -35,12 +33,14 @@ public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
     protected Boolean doInBackground(String... aParams) {
         final OkHttpClient client = new OkHttpClient();
         final Gson gson = new Gson();
-        JsonObject addDevice = new JsonObject();
-        addDevice.addProperty("mac", aParams[0]);
-        System.out.println(aParams[0]);
+        JsonObject authJson = new JsonObject();
+        authJson.addProperty("username", aParams[0]);
+        authJson.addProperty("password", aParams[1]);
+        authJson.addProperty("first_name", aParams[2]);
+        authJson.addProperty("last_name", aParams[3]);
 
-        RequestBody authBody = RequestBody.create(JSON, addDevice.toString());
-        Request request = new Request.Builder().url(ApiRequests.baseUrl + "/devices").post(authBody).addHeader("Authentication", ApiRequests.authToken).build();
+        RequestBody authBody = RequestBody.create(JSON, authJson.toString());
+        Request request = new Request.Builder().url(ApiRequests.baseUrl + "/users").post(authBody).build();
         try {
             Response response = client.newCall(request).execute();
             JsonParser parser = new JsonParser();
@@ -55,12 +55,15 @@ public class AddDeviceTask extends AsyncTask<String, Boolean, Boolean>  {
                 return false;
             }
             else {
-                System.out.println("Bad http response: add device " + response.code());
+                System.out.println("Bad http response: auth "  + response.code());
+                System.out.println(authBody.toString());
+                System.out.println(request.toString());
                 return false;
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             System.out.println("Bad api call");
+            System.out.println(request.toString());
             return false;
         }
     }

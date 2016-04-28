@@ -31,4 +31,8 @@
         android:singleLine="true"
         android:title="Password" />
 
+    <Preference android:title="Create!"
+        android:key="closeandsave"
+        android:summary="Create your new account" />
+
 </PreferenceScreen>

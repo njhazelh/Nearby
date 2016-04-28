@@ -1,9 +1,6 @@
 package com.fake_nearby.nearby.nearby;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
