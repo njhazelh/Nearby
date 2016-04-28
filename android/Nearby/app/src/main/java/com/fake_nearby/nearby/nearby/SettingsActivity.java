@@ -25,7 +25,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         System.out.println("shared pref changed!");
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         try {
-            if (key.equals("firstlast") || key.equals("firstlast") || key.equals("firstlast")) {
+            if (key.equals("firstlast") || key.equals("username") || key.equals("password")) {
                 ApiRequests.accountService(prefs.getString("username", "messedup"), prefs.getString("password", "messedup"), prefs.getString("firstlast", "messed up"), "modify");
             }
         }

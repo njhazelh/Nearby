@@ -49,7 +49,7 @@ public class ReportObservationTask extends AsyncTask<String, Boolean, Boolean>  
                 JsonParser parser = new JsonParser();
                 JsonElement element = parser.parse(response.body().string());
                 JsonObject jsonObject = element.getAsJsonObject();
-                System.out.println(jsonObject.get("message").getAsString());
+                System.out.println("reported: " + jsonObject.get("message").getAsString());
                 return true;
             }
             else {
