@@ -240,7 +240,7 @@ def get_nearby_users(db):
         """
         WITH data AS (
             SELECT * FROM observations o
-            WHERE age(CURRENT_TIMESTAMP, o.timestamp) < INTERVAL '1 day'
+            WHERE age(CURRENT_TIMESTAMP, o.timestamp) < INTERVAL '1 minute'
         ), full_set AS (
             -- People Seen by target_user
             SELECT u.* FROM data d

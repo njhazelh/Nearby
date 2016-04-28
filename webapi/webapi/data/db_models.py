@@ -49,6 +49,8 @@ class Device(Base):
     active = Column(Boolean, nullable=False, default=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="devices")
+    observations = relationship("Observation", back_populates="device",
+        cascade="all, delete, delete-orphan")
 
 
 class Observation(Base):
@@ -62,3 +64,4 @@ class Observation(Base):
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="observations")
+    device = relationship("Device", back_populates="observations")
